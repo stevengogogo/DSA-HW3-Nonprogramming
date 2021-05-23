@@ -9,7 +9,7 @@ toc:
 
 <center>
 
-# Homework 3
+# Homework 3: Nonprogramming part
 
 邱紹庭
 
