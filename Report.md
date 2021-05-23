@@ -4,6 +4,9 @@ toc:
   depth_to: 3
   ordered: false
 ---
+
+[![hackmd-github-sync-badge](https://hackmd.io/JZUhv-byTRqV46cumxZ9Xw/badge)](https://hackmd.io/JZUhv-byTRqV46cumxZ9Xw)
+
 <center>
 
 # Homework 3
