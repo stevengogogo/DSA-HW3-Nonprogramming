@@ -1,48 +1,72 @@
 ---
-puppeteer:
-  landscape: false
-  format: "A4"
-  timeout: 500 # <= Special config, which means waitFor 3000 ms
-  export_on_save:
-    puppeteer: true # export PDF on save
-    puppeteer: ["pdf"] # export PDF and PNG files on save
+toc:
+  depth_from: 2
+  depth_to: 3
+  ordered: false
 ---
 <center>
 
-# Report
+# Homework 3
 
-Your name
-`Email`
+邱紹庭
+
+`r07945001@ntu.edu.tw`
 
 </center>
 
+**Table of contents**
 
-## Code
+[toc]
 
-### H3
-#### H4
-##### H5
-###### H6
+---
 
-
-```c  {.line-numbers}
-int a;
-```
-
-## Citation
+## Problem 1 - Hash (60pt)
 
 
-Something important [^1][^3].
-
-## Equations
-
-$$
-\begin{align}
- \lim_{n\rightarrow\infty} \frac{f}{g} &= 0 \\
- &= 3
-\end{align}
-$$
+### 1. (10pt) (WIP)
 
 
-[^1]: Citation 1
-[^3]: Auto indexing
+### 2. (10pt) (WIP)
+
+
+### 3. (20pt) (WIP)
+
+
+### 4. (20pt) (WIP)
+
+---
+
+## Problem 2 - String matching (60pt)
+
+
+### 1. (10pt) (WIP)
+
+
+### 2. (10pt) (WIP)
+
+
+### 3. (20pt) (WIP)
+
+
+### 4. (20pt) (WIP)
+
+---
+
+## Problem 3 - Having fun with Disjoint Sets (80pt)
+
+
+### 1. (15pt) (WIP)
+
+
+### 2. (15pt) (WIP)
+
+
+### 3. (15pt) (WIP)
+
+
+### 4. (15pt) (WIP)
+
+
+---
+
+## References
