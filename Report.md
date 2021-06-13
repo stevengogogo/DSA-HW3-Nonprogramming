@@ -45,39 +45,109 @@ P(X) &= 1 - P(X')\\
 
 [^UniHash]: [If we store n keys in a hash table of size m=n^2 , then what is the probability of any collision ?](https://gateoverflow.in/41109/store-keys-hash-table-size-then-what-probability-collision)
 
-### 2. (10pt) (WIP)
+### 2. (10pt) 
 
-**💡 Idea**
-1. Get expected number of collision
-2. Get number of unique slots 
-3. Solve equation with the objective unique number.
+**Expected number of unique keys**
 
-**Expected number of collision**
-
-Suppose $n$ keys are inserted into the space $P$. The expected number of collision is
-
-$$E[\text{# of collision}] = \sum_{i=1}^{n} \frac{n-i}{|P|} = \frac{n^2 - n}{2|P|}$$
-
-**Expected number of unique hashes**
-
-Since there are $n$ function calls, the total hashes is the summation of unique hashes and number of collisions which are duplicated.
-
-Since we know the expected number of collion, the exptected amount of unique hashes is derived from the substraction:
+Suppose there are $|P|$ buckets, the probability of any two keys colliding is $\frac{1}{|P|}$. When there are already $k$ keys in the space and insert key $k+1$, the probability that no collision with any previous key is $(1-\frac{1}{|P|})^k$. For inserting $n$ items, **the expected number of unique keys** is:
 
 $$\begin{align}
-E[\text{# of unique hashes}] &= n  - E[\text{# of collision}] \\
-& = n - \frac{n^2 - n}{2|P|}\\
+E[\text{# of unique keys}] &= \sum_{k=0}^{n-1} (1-\frac{1}{|P|})^{k} \\
+&= |P| - |P| (1-\frac{1}{|P|})^n
 \end{align}$$
 
-**How much calls we need?**
+**Sufficient number of calls**
+
+$$
+|P| - |P| (1-\frac{1}{|P|})^n = \frac{\lfloor P \rfloor}{4}
+$$
 
 
+Therefore,
+
+$$\frac{3}{4} = (1-\frac{1}{|P|})^n$$
+
+$$n = \frac{\log \frac{3}{4}}{\log (1-\frac{1}{|P|})}_{\#}$$
 
 
-### 3. (20pt) (WIP)
+where $n$ is the extected times of query to reach $\frac{|P|}{4}$ unique passwords.
+
+### 3. (20pt) 
+- $h(k,i) = (h_1(k)+i)~mod~m$
+- $h_{1}(k) = k~mod~m$
+- $m=11$
+
+**Open addressing with linear probing**
+
+|k|h1(k)|0|1|2|3|4|5|6|7|8|9|10|
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|18|7||||||||18|||
+|34|1||34||||||18|||
+|9|9||34||||||18||9|
+|37|4||34|||37|||18||9|
+|40|7||34|||37|||18|40|9|
+|32|9||34|||37|||18|40|9|32|
+|89|1||34|89||37|||18|40|9|32|
 
 
-### 4. (20pt) (WIP)
+**Open addressing with double hashing**
+
+- $h(k,i) = (h_1(k) + ih_2(k))~mod~m$
+- Primary Hash function: $h_{1}(k) = k~mod~m$
+- Secondary hash function: $h_{2}(k) = 1+ (k~mod~(m-1))$
+- $m=11$
+
+|k|h1(k)|h2(k)|0|1|2|3|4|5|6|7|8|9|10|
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+|18|7|9||||||||18|||
+|34|1|5||34||||||18|||
+|9|9|10||34||||||18||9|
+|37|4|8||34|||37|||18||9|
+|40|7|1||34|||37|||18|40|9|
+|32|9|3||34|||37|||18|40|9|32|
+|89|1|10|89|34|||37|||18|40|9|32|
+
+
+- 40
+    - H1:40%11 = 7 
+    - H2: 1+(40%10) = 1 
+- 32
+    - H1: 32%11 = 10
+- 89
+    - H1: 89%11=1
+    - H2: 1+ 89%10 = 10
+
+
+### 4. (20pt) 
+
+
+**Table T1**
+
+- $h_1(k)=k~mod~7$
+
+|k|h1(k)|0|1|2|3|4|5|6|
+|---|---|---|---|---|---|---|---|---|
+|6|6|||||||6|
+|31|3||||31|||6|
+|2|2|||2|31|||6|
+|41|6|||2|31|||41|
+|30|2|||30|31|||6|
+|35|0|35||30|31|||6|
+|44|2|35||2|31|||6|
+
+**Table T2**
+
+- $h_2(k) = \lfloor \frac{k}{7} \rfloor~mod~7$
+
+|k|h2(k)|0|1|2|3|4|5|6|
+|---|---|---|---|---|---|---|---|---|
+|6|0|||||||||
+|31|4||||||||
+|2|0|||||||||
+|41|5|6|||||||
+|30|4|2|||||41||
+|35|5|2|||||41||
+|44|6|2||||30|41||
 
 ---
 
