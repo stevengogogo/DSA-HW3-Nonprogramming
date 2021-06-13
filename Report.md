@@ -26,26 +26,24 @@ toc:
 ## Problem 1 - Hash (60pt)
 
 
-### 1. (10pt) (WIP)
+### 1. (10pt) 
 
-Suppose all the keys are ordered $\{k_1,..k_n\}$. Let $P_{li}$ be the probability of inserting $l$ such that $k_l>k_i$ and $h(l)=h(k_i)$.By applying the uniform hashing assumption:
-
-$$P_{li} = \sum_{l>j} Pr(h(k_{l}) = h(k_i)) = \sum_{l>i} \frac{1}{n^2} = \frac{n-i}{n^2}$$
-
-
-
-Therefore, $P_{li}$ is **the probability of collision** when inserting $l$ after $i$'s keys inserted. Apparently, $1-P_{li}$ is **the probability of no collision**, denoted $P'_{li}$:
-
-$$P'_{li} := (1-P_{li}) = \frac{n^2-n+i}{n^2}$$
-
-The uniform hashing assumes that all hashing event is identical and independent distributed. Hence, the probablity of no collision ($P_{nc}$) in for inserting $n$ keys can be a series of products of $P'_{ji}$ for $\{j|1..n\}$:
+The probability of no collision ($X'$)[^UniHash]:
 
 $$\begin{align}
-P_{nc} &= \prod_{i=1}^{n} \frac{i-n}{m} \\
-       &= \prod_{i=1}^{n}  \\
-       &= 
+P(X') &= \frac{n^2}{n^2} \frac{n^2-1}{n^2} \cdots \frac{n^2-n+1}{n^2} \\
+      &= \prod_{i=1}^{n} \frac{n^2 - i + 1}{n^2}
 \end{align}$$
 
+On the other hand, the probability of any collision ($X$):
+
+$$\begin{align}
+P(X) &= 1 - P(X')\\
+     &= 1 - \prod_{i=1}^{n} \frac{n^2 - i + 1}{n^2}
+\end{align}$$
+
+
+[^UniHash]: [If we store n keys in a hash table of size m=n^2 , then what is the probability of any collision ?](https://gateoverflow.in/41109/store-keys-hash-table-size-then-what-probability-collision)
 
 ### 2. (10pt) (WIP)
 
