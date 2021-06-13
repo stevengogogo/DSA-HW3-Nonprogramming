@@ -28,8 +28,23 @@ toc:
 
 ### 1. (10pt) (WIP)
 
-Suppose all the keys are ordered $\{k_1,..k_n\}$. Let $$
+Suppose all the keys are ordered $\{k_1,..k_n\}$. Let $P_{li}$ be the probability of inserting $l$ such that $k_l>k_i$ and $h(l)=h(k_i)$.By applying the uniform hashing assumption:
 
+$$P_{li} = \sum_{l>j} Pr(h(k_{l}) = h(k_i)) = \sum_{l>i} \frac{1}{n^2} = \frac{n-i}{n^2}$$
+
+
+
+Therefore, $P_{li}$ is **the probability of collision** when inserting $l$ after $i$'s keys inserted. Apparently, $1-P_{li}$ is **the probability of no collision**, denoted $P'_{li}$:
+
+$$P'_{li} := (1-P_{li}) = \frac{n^2-n+i}{n^2}$$
+
+The uniform hashing assumes that all hashing event is identical and independent distributed. Hence, the probablity of no collision ($P_{nc}$) in for inserting $n$ keys can be a series of products of $P'_{ji}$ for $\{j|1..n\}$:
+
+$$\begin{align}
+P_{nc} &= \prod_{i=1}^{n} \frac{i-n}{m} \\
+       &= \prod_{i=1}^{n}  \\
+       &= 
+\end{align}$$
 
 
 ### 2. (10pt) (WIP)
