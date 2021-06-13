@@ -47,6 +47,32 @@ P(X) &= 1 - P(X')\\
 
 ### 2. (10pt) (WIP)
 
+**💡 Idea**
+1. Get expected number of collision
+2. Get number of unique slots 
+3. Solve equation with the objective unique number.
+
+**Expected number of collision**
+
+Suppose $n$ keys are inserted into the space $P$. The expected number of collision is
+
+$$E[\text{# of collision}] = \sum_{i=1}^{n} \frac{n-i}{|P|} = \frac{n^2 - n}{2|P|}$$
+
+**Expected number of unique hashes**
+
+Since there are $n$ function calls, the total hashes is the summation of unique hashes and number of collisions which are duplicated.
+
+Since we know the expected number of collion, the exptected amount of unique hashes is derived from the substraction:
+
+$$\begin{align}
+E[\text{# of unique hashes}] &= n  - E[\text{# of collision}] \\
+& = n - \frac{n^2 - n}{2|P|}\\
+\end{align}$$
+
+**How much calls we need?**
+
+
+
 
 ### 3. (20pt) (WIP)
 
