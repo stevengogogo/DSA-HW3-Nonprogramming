@@ -28,49 +28,52 @@ toc:
 
 ### 1. (10pt) 
 
-The probability of no collision ($X'$)[^UniHash]:
+The probability of no collision ($X'$)[^AC-P1-1]:
+
 
 $$\begin{align}
-P(X') &= \frac{n^2}{n^2} \frac{n^2-1}{n^2} \cdots \frac{n^2-n+1}{n^2} \\
-      &= \prod_{i=1}^{n} \frac{n^2 - i + 1}{n^2}
-\end{align}$$
-
-On the other hand, the probability of any collision ($X$):
-
-$$\begin{align}
-P(X) &= 1 - P(X')\\
-     &= 1 - \prod_{i=1}^{n} \frac{n^2 - i + 1}{n^2}
+Pr(X') &= \frac{\text{Combination of non-overlapping hashes}}{\text{All combination of hashes}} \\
+       &= \frac{C^{n^2}_{n}}{H^{n^2}_{n}} \\
+       &= \frac{C^{n^2}_{n}}{C^{n^2 + n - 1}_{n^2 - 1}}\\
+       &= \frac{ \frac{(n^2)!}{(n^2-n)!n!} }{ \frac{(n^2+n-1)!}{(n^2-1)!n!} }\\
+       &= \frac{ \frac{(n^2)!}{(n^2-n)!} }{ \frac{(n^2+n-1)!}{(n^2-1)!} }\\
+       &= \frac{(n^2)!(n^2-1)!}{(n^2-n)!(n^2+n-1)!}_{\#}
 \end{align}$$
 
 
-[^UniHash]: [If we store n keys in a hash table of size m=n^2 , then what is the probability of any collision ?](https://gateoverflow.in/41109/store-keys-hash-table-size-then-what-probability-collision)
+**Definition**
+
+- $C^{n}_{k} = \frac{n!}{k!(n-k)!}$
+- $H^{n}_{k} = C^{n+k-1}_{n-1} = \frac{(n+k-1)!}{k!(n-1)!}$
+
+
+[^AC-P1-1]: Thanks to 張杰輝's inspiration.
 
 ### 2. (10pt) 
 
-**Expected number of unique keys**
+**💡 Idea**
 
-Suppose there are $|P|$ buckets, the probability of any two keys colliding is $\frac{1}{|P|}$. When there are already $k$ keys in the space and insert key $k+1$, the probability that no collision with any previous key is $(1-\frac{1}{|P|})^k$. For inserting $n$ items, **the expected number of unique keys** is:
-
-$$\begin{align}
-E[\text{# of unique keys}] &= \sum_{k=0}^{n-1} (1-\frac{1}{|P|})^{k} \\
-&= |P| - |P| (1-\frac{1}{|P|})^n
-\end{align}$$
-
-**Sufficient number of calls**
-
-$$
-|P| - |P| (1-\frac{1}{|P|})^n = \frac{\lfloor P \rfloor}{4}
-$$
+Suppose we add unique keys one by one. Inserting first unique key at start require extected $1$ time of insertion. For second unique key, since there is already one position occupied, the acquisition of second key requires $\frac{|P|}{|P|-1}$ expected times of insertion[^AC-P1-1].
 
 
-Therefore,
+**🔧 Formulation**
 
-$$\frac{3}{4} = (1-\frac{1}{|P|})^n$$
+For inserting $a+1^{th}$ unique keys when there is already $a$ slots occupied. Let $p$ be the probability of success insertion of unique key with single trial. The probability of success insertion after $n$ trials is
 
-$$n = \frac{\log \frac{3}{4}}{\log (1-\frac{1}{|P|})}_{\#}$$
+$$Pr_{a+1}(p_{a+1},n) = (1-p_{a+1})^{n-1}p_{a+1}$$
+
+where $p_{a+1} = \frac{|P|-a}{|P|}$ and $n\in \{1,...,\infty\}$. The probability  $Pr_{a+1}(p_{a+1},n) \in$ **Geometric distribution**.
+
+Since $Pr_a$ belongs to geometric distribution, the expected value is[^geom]
+
+$$E[\text{Times to inserting $a+1^{th}$ key} | a \text{ slots occupied in } P] = \frac{1}{Pr_{a+1}} =\frac{|P|}{|P|-a}$$
+
+For inserting $k$ keys,
+
+$$E[\text{# of inserting $k$ keys}] = \sum_{i=0}^{\frac{\lfloor P \rfloor}{4} -1}\frac{|P|}{|P|-i}_{\#}$$
 
 
-where $n$ is the extected times of query to reach $\frac{|P|}{4}$ unique passwords.
+[^geom]: https://en.wikipedia.org/wiki/Geometric_distribution
 
 ### 3. (20pt) 
 - $h(k,i) = (h_1(k)+i)~mod~m$
@@ -121,7 +124,7 @@ where $n$ is the extected times of query to reach $\frac{|P|}{4}$ unique passwor
 ### 4. (20pt) 
 
 
-**Table T1**
+**Table T1**[^AC-P1-1]
 
 - $h_1(k)=k~mod~7$
 
@@ -132,8 +135,8 @@ where $n$ is the extected times of query to reach $\frac{|P|}{4}$ unique passwor
 |2|2|||2|31|||6|
 |41|6|||2|31|||41|
 |30|2|||30|31|||6|
-|35|0|35||30|31|||6|
-|44|2|35||2|31|||6|
+|45|3|||30|45|||6|
+|44|2|||44|31|||6|
 
 **Table T2**
 
@@ -146,8 +149,8 @@ where $n$ is the extected times of query to reach $\frac{|P|}{4}$ unique passwor
 |2|0|||||||||
 |41|5|6|||||||
 |30|4|2|||||41||
-|35|5|2|||||41||
-|44|6|2||||30|41||
+|45|6|2||||31|41||
+|44|6|2||||30|41|45|
 
 ---
 
@@ -380,19 +383,170 @@ end
 ## Problem 3 - Having fun with Disjoint Sets (80pt)
 
 
-### 1. (15pt) (WIP)
+### 1. (15pt) 
 
 **💡 Idea**
-- 剛開始所有 vertex 都是黑色
-- 每次加 edge . 上紅黑兩色, 黑-紅. 如果不行, 就 false
+- Initiation [^findbipart][^stackbipart]
+    - Set singular sets for all verteces
+- Add
+    - If same set, return `false`
+    - If different set, `union`
+  
 
 
+**Initiation**
 
-**📖 Ref**: [^findbipart]
+```cpp=
+INIT(N)
+    Create MAP[0,..,N-1] with NIL-filled
+    for i = 0 to N-1
+        MAKE-SET(i)
+    end
+    
+    isBiparatite = True
+end
+```
+- `isBiparatite` can be seen and modified globally.
+- Vector `MAP`: contains a nighbor of each verteces.
+    - If `MAP[1] == 2`, it means vertex `1` is connected to vertex `2`
+
+**Adding edge**
+
+```cpp=
+ADD-EDGE(x,y)
+    // Check bipartite
+    if FIND-SET(x) == FIND-SET(y)
+        isBiparatite = False
+    end
+    
+    if MAP[x] == NIL
+        MAP[x] = y
+    else
+        UNION(MAP[x], y)
+    end
+    
+    if MAP[y] == NIL
+        MAP[y] = x
+    else
+        UNION(MAP[y], x)
+    end
+end
+```
+
+- `isBiparatite` is generated by `INIT`.
+
+
+**Check bipartite**
+
+```cpp=
+IS-BIPARTITE()
+    return isBiparatite
+end
+```
+
+**🔢 Analysis**
+
+- **Initiation**: Operates in linear time complexity for `Make-Set` is $O(1)$ and iterates $N$ times. Therefore, the total time complexity is $O(N)$.
+- **Add Edge**: the union by size technique can confirm the smaller set enlarges at least twice of its size, which yields $O(\log N)$ time complexity for `Union` operation. Since the maximum calling of `ADD-EDGE` is $M$, the worst case of time complexity is: $O(M \log N)$ .
+- **Check bipartite**: The time complexity of `IS-BIPARTITE` is $O(1)$.
+- **Summary**: The total operation requires $O(N) + O(M\log N)$ in time complexity.
+
+
 [^findbipart]: [How to Find If a Graph Is Bipartite?](https://www.baeldung.com/cs/graphs-bipartite)
+[^stackbipart]: https://stackoverflow.com/questions/53246453/detect-if-a-graph-is-bipartite-using-union-find-aka-disjoint-sets
 
 
-### 2. (15pt) (WIP)
+### 2. (15pt) 
+
+**💡 Idea**
+1. Create $3N$ nodes. $N$ nodes labelled with `scissor`, $N$ for `stone` and $N$ for `paper`
+2. For `Win` operation, links all of 3 victory conditions. That is `scissor -> paper` / `paper->stone` / `stone->scissor`, and link these conditions into three disjoint sets.
+3. For `tie` operation. For example: `Tie(i,j)`: Link $Node_{i}^{stone}$ to  $Node_{j}^{stone}$ , and the other two pairs (**Fig 3-1.**).
+4. Contradiction: if more than 1 $Node_{i}^{\#}$ belongs to the same set, it means there is one person revealing two results at the same time which is the contradiction.
+
+<center>
+
+<img height=100 src="https://i.imgur.com/WQe2ymI.png">
+
+</center>
+
+**Fig 3-1. Sets of all possibility.**
+
+**🔧Implementation**
+
+**Initiation**
+
+```cpp=
+function INIT(N)
+    Create list of vertexes: 
+        Scissor[1..N]
+        Stone[1..N]
+        Paper[1..N]
+        
+    for i = 1 to N
+        MAKE-SET(Scissor[i])
+        MAKE-SET(Stone[i])
+        MAKE-SET(Paper[i])
+    end
+end
+```
+
+- The list contains **Vertex** object.
+- These function creates $3N$ verteces stored in three lists.
+- Noted that `Scissor[1]` means `person 1` with `scissor` output, and `Scissor[1]` and `Paper[1]` are two independent objects.
+
+**Win**
+
+```cpp=
+function WIN(a,b)
+    UNION(Scissor[a], Paper[b])
+    UNION(Stone[a], Scissor[b])
+    UNION(Paper[a], Stone[b])
+end
+```
+
+**Tie**
+
+```cpp=
+function TIE(a,b)
+    UNION(Scissor[a], Scissor[b])
+    UNION(Stone[a], Stone[b])
+    UNION(Paper[a], Paper[b])
+end
+```
+
+**Contradiction**
+
+```cpp=
+function IS-CONTRADICT()
+    for i = 1 to N
+        if(FIND-SET(Scissor[i]) == FIND-SET(Stone[i]))
+            return true
+        end
+        
+        if(FIND-SET(Scissor[i]) == FIND-SET(Paper[i]))
+            return true
+        end
+        
+        if(FIND-SET(Paper[i]) == FIND-SET(Stone[i]))
+            return true
+        end
+    end
+    
+    return false
+end
+```
+
+
+**🔢 Analysis**
+- Time:
+    - `Init`: $O(N)$
+    - `WIN`: $O(\log N)$
+    - `TIE`: $O(\log N)$
+    - `IS-CONTRADICT`: $O(\log N)$
+    - Total: $O(N + M \log N)$. Time complexity results from union by size, that is used for `WIN`/`TIE`/`IS-CONTRADICT` function. Noted that these three function are called $M$ times.
+- Space: 
+    - Individual outputs are set as nodes, that triple the size of $N$ verteces. The total space complexity is $O(N)$.
 
 
 ### 3. (15pt) (WIP)
@@ -404,6 +558,6 @@ end
 ### 5. (20pt) (WIP)
 
 
----
+
 
 ## References
