@@ -121,19 +121,25 @@ int main () {
     struct DisjointSet djs;
     double time_spend;
 
-    clock_t begin = clock();
     init(&djs, 10000000);
+   
+    
+  
+    show_cc(&djs);
+
+    clock_t begin = clock();
+    for(int i=0; i<10000;i++)
+        add_edge(&djs, 1, i);
     clock_t end = clock();
     time_spend = (double)(end - begin) / CLOCKS_PER_SEC;
     printf("Init: %f\n",time_spend );
-    /*
-    show_cc(&djs);
-    add_edge(&djs, 1, 2);
+    
     add_edge(&djs, 1, 3);
+
     show_cc(&djs);
     undo(&djs);
     show_cc(&djs);
     undo(&djs);
     show_cc(&djs);
-    */
+ 
 }
