@@ -28,24 +28,22 @@ toc:
 
 ### 1. (10pt) 
 
-The probability of no collision ($X'$)[^AC-P1-1]:
-
+The probability of no collision ($X'$)[^UniHash]:
 
 $$\begin{align}
-Pr(X') &= \frac{\text{Combination of non-overlapping hashes}}{\text{All combination of hashes}} \\
-       &= \frac{C^{n^2}_{n}}{H^{n^2}_{n}} \\
-       &= \frac{C^{n^2}_{n}}{C^{n^2 + n - 1}_{n^2 - 1}}\\
-       &= \frac{ \frac{(n^2)!}{(n^2-n)!n!} }{ \frac{(n^2+n-1)!}{(n^2-1)!n!} }\\
-       &= \frac{ \frac{(n^2)!}{(n^2-n)!} }{ \frac{(n^2+n-1)!}{(n^2-1)!} }\\
-       &= \frac{(n^2)!(n^2-1)!}{(n^2-n)!(n^2+n-1)!}_{\#}
+P(X') &= \frac{n^2}{n^2} \frac{n^2-1}{n^2} \cdots \frac{n^2-n+1}{n^2} \\
+      &= \prod_{i=1}^{n} \frac{n^2 - i + 1}{n^2}
+\end{align}$$
+
+On the other hand, the probability of any collision ($X$):
+
+$$\begin{align}
+P(X) &= 1 - P(X')\\
+     &= 1 - \prod_{i=1}^{n} \frac{n^2 - i + 1}{n^2}
 \end{align}$$
 
 
-**Definition**
-
-- $C^{n}_{k} = \frac{n!}{k!(n-k)!}$
-- $H^{n}_{k} = C^{n+k-1}_{n-1} = \frac{(n+k-1)!}{k!(n-1)!}$
-
+[^UniHash]: [If we store n keys in a hash table of size m=n^2 , then what is the probability of any collision ?](https://gateoverflow.in/41109/store-keys-hash-table-size-then-what-probability-collision)
 
 [^AC-P1-1]: Thanks to 張杰輝's inspiration.
 
@@ -574,42 +572,26 @@ This process is trivially $O(N)$ in time complexity. Because the stack operation
 
 - This implementation only apply **path compression**. As we can see in **line `85-92`**, the `djs_assign` reassign the subtree to the representative of the disjoint set.
 - On the other hand, the `djs_union`(**line `94-99`**), the union process is deterministically performed, regardless of the sizes of two disjoint sets.
-- According to [^disjoint-amortized][^disjoint-ppt], the linked list with path compression
-    - `Find-set`: 
+
+**Contradiction**
+- According to [^disjoint-amortized][^disjoint-ppt], with the linked list and path compression, the `FIND-SET` requires recursive in times of tree height. Because this operation doesn't provide **union by size** technique. In the worst cast, the tree height can be flattened to a linked list with length $O(N)$ (**Fig. 3-2**).
+
+- If the process is undid. The structure will return to **Fig 3-2 (left)** with $O(N)$ operations.
+
+- The **contradict condition** is
+    - Call `undo` instantly before call `union`.
+
+ 
+<img height=200 src="https://i.imgur.com/DsSzsEu.png">
+
+**Fig 3-2.** Path compression[^disjoint-ppt]. The structure can be converted to right by `FIND-SET`. Conversely, `Undo`.
 
 
+**📒 Conclusion**
 
-**Conclusion**
+- I **disprove** the stated time complexity. 
+- The worst case can be $O(N+MN)$ with the contradict condition described above.
 
-
-
-**🧪 Experiment**[^cpuinfo]
-
-|INIT(N)|Time Elapsed(sec)|
-|---|---|
-|$1e9$|$7.13$|
-|$1e8$|$0.58$|
-|$1e7$|$0.06$|
-
-
-|ADD-EDGE(1,i)|Time Elapsed(sec)|
-|---|---|
-|$1e7$|$2.07$|
-|$1e6$|$0.33$|
-|$1e5$|$0.02$|
-|$1e4$|$0.002$|
-
-
-- with `init(1e7)`
-
-|undo|Time Elapsed(sec)|
-|---|---|
-|$1e7$|$0.57$|
-|$1e6$|$0.057$|
-|$1e5$|$0.0057$|
-
-- with `init(1e7)`
-- add_edge(1,0:1e7-1)
 
 
 
@@ -626,33 +608,40 @@ sequence of m ≥ n find and n – 1 union operations in O(m log n) time`
 ### 4. (15pt) (WIP)
 
 
+As mentioned in  [^disjoint-amortized], the linked list with union-by-size can achieve $O(N+M\log N)$ time complexity.
 
-**🧪 Experiment**[^cpuinfo]
 
-|INIT(N)|Time Elapsed(sec)|
-|---|---|
-|$1e9$|$8.33$|
-|$1e8$|$0.73$|
-|$1e7$|$0.076$|
 
-|ADD-EDGE(1,i)|Time Elapsed(sec)|
-|---|---|
-|$1e7$|$2.420541$|
-|$1e6$|$0.245$|
-|$1e5$|$0.024$|
-|$1e4$|$0.002529$|
+**Initiation**
 
-- with `init(1e7)`
+The first $O(N)$ is caused by the initiation, that uses a `for-loop` to setup all sets.
 
-|undo|Time Elapsed(sec)|
-|---|---|
-|$1e7$|$0.776684$|
-|$1e6$|$0.077373$|
-|$1e5$|$0.007572$|
-|$1e4$|$0.000791$|
+**Find set**
 
-- with `init(1e7)`
-- add_edge(1,0:1e7-1)
+With the aid of **union by size**, the data structure remains a tree (**Fig 3-3**). This makes `Find-set` operation works in $O(\log N)$[^findset_union].
+
+
+**Add Edge**
+
+As mentioned in [^findset_union], the union by size technique assures the smaller set to increase at least twice of its original size, maintaining the height of the tree approximately $O(\log N)$. The union operation is accompanied with the `Find-set` which requires $O(\log N)$ time complexity. However, the link process (**Fig 3-3.**) only requires $O(1)$[^disjoint-ppt][^disjoint-amortized].
+
+
+**Undo**
+
+The undo process doesn't destroy the tree structure. For each undo, the unlink process is taken place, and this operation maintain the tree height. Thus, after calling `undo`, `Find-set` and `Add-edge` remains $O(\log N)$ time complexity. The `undo` operation requires the time complexity no more than $O(\log N)$
+
+
+**Conclusion**
+
+- **The statement is valid**. The time complexity of this modification is $O(N+M\log N)$.
+
+<img height=200 src="https://i.imgur.com/onvK94p.png">
+
+**Fig 3-3.** Union by rank [^disjoint-ppt]. The dash line represents the link created by `Add-edge`.
+
+
+[^findset_union]: https://www.chegg.com/homework-help/questions-and-answers/data-structure-algorithms-need-understand-time-complexity-analysis-exam-disjoint-sets-link-q33572109. ![](https://i.imgur.com/BsghCel.png)
+
 
 
 ### 5. (20pt) (WIP)
