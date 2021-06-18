@@ -247,21 +247,20 @@ end
 
 - `S[1..N]` = `bcdabcde`
 
-|$i$|$x(i) = \max(p)$|Domain|
+|$i$|$x(i) = \max(p)$|array $X$|
 |---|---|---|
-|1|3|`|bcd|abcde`|
-|2|3|`cda|bcd|e`|
-|3|3|`da|bcd|e`|
-|4|3|`a|bcd|e`|
-|5|3|`|bcd|e`|
-|6|0|`cde`|
-|7|0|`de`|
-|8|0|`e`|
+|1|8|`bcdabcde`|
+|2|0|` `|
+|3|0|` `|
+|4|0|` `|
+|5|3|`bcd`|
+|6|0|` `|
+|7|0|` `|
+|8|0|` `|
 
 
->Noted that the region `S[1..p] == S[i..i+p-1]` is marked with `| |`.
 
-### 3. (20pt) 
+### 3. (20pt) [Fixing]
 
 **💡 Idea**
 - From [P2-2](#2-10pt), we can observe that $\max(P)$ is trivally **monotonous increasing** when $i$ is in decreasing order.
@@ -329,7 +328,7 @@ $$
 
 
 
-### 4. (20pt) 
+### 4. (20pt) [Fixing]
 
 **💡 Idea**
 - Modified `Rabin-Karp Matcher` [^RKMatch]
@@ -410,6 +409,16 @@ end
 - Vector `MAP`: contains a nighbor of each verteces.
     - If `MAP[1] == 2`, it means vertex `1` is connected to vertex `2`
 
+
+![Uploading file..._rhh32k7ty]()
+
+
+  
+
+<img height=200 src="https://i.imgur.com/kxkp8uz.jpg">
+
+**Fig 3.1** The data structure of `MAP`. In this case `Add(1)`
+
 **Adding edge**
 
 ```cpp=
@@ -464,11 +473,10 @@ end
 3. For `tie` operation. For example: `Tie(i,j)`: Link $Node_{i}^{stone}$ to  $Node_{j}^{stone}$ , and the other two pairs (**Fig 3-1.**).
 4. Contradiction: if more than 1 $Node_{i}^{\#}$ belongs to the same set, it means there is one person revealing two results at the same time which is the contradiction.
 
-<center>
+
 
 <img height=100 src="https://i.imgur.com/WQe2ymI.png">
 
-</center>
 
 **Fig 3-1. Sets of all possibility.**
 
@@ -551,8 +559,100 @@ end
 
 ### 3. (15pt) (WIP)
 
+**💡 Idea**
+1. **Amortized analysis**: Use amotized analysis to derive the time complexity of **path compression** without **union by size**.
+2. **Experiment**: Use benchmarking technique to prove the statement.
+
+
+**🔢 Amortized analysis**
+
+**Initiation**
+
+This process is trivially $O(N)$ in time complexity. Because the stack operations are performed $N$ times both with `memo` and `stk` (**line `58-68`**).
+
+**Add Edge**
+
+- This implementation only apply **path compression**. As we can see in **line `85-92`**, the `djs_assign` reassign the subtree to the representative of the disjoint set.
+- On the other hand, the `djs_union`(**line `94-99`**), the union process is deterministically performed, regardless of the sizes of two disjoint sets.
+- According to [^disjoint-amortized][^disjoint-ppt], the linked list with path compression
+    - `Find-set`: 
+
+
+
+**Conclusion**
+
+
+
+**🧪 Experiment**[^cpuinfo]
+
+|INIT(N)|Time Elapsed(sec)|
+|---|---|
+|$1e9$|$7.13$|
+|$1e8$|$0.58$|
+|$1e7$|$0.06$|
+
+
+|ADD-EDGE(1,i)|Time Elapsed(sec)|
+|---|---|
+|$1e7$|$2.07$|
+|$1e6$|$0.33$|
+|$1e5$|$0.02$|
+|$1e4$|$0.002$|
+
+
+- with `init(1e7)`
+
+|undo|Time Elapsed(sec)|
+|---|---|
+|$1e7$|$0.57$|
+|$1e6$|$0.057$|
+|$1e5$|$0.0057$|
+
+- with `init(1e7)`
+- add_edge(1,0:1e7-1)
+
+
+
+
+
+[^cpuinfo]: CPU Info: `Model name: Intel(R) Xeon(R) CPU @ 2.20GHz; CPU MHz: 2199.998`
+
+[^disjoint-amortized]: Disjoint set. PPT. Page 18. Prof. Hsin-Mu Tsai.
+
+[^disjoint-ppt]: Page 30. https://www.cs.princeton.edu/courses/archive/spring13/cos423/lectures/UnionFind.pdf. `Starting from an empty data 
+structure, path compression (with naive linking) performs any intermixed 
+sequence of m ≥ n find and n – 1 union operations in O(m log n) time`
 
 ### 4. (15pt) (WIP)
+
+
+
+**🧪 Experiment**[^cpuinfo]
+
+|INIT(N)|Time Elapsed(sec)|
+|---|---|
+|$1e9$|$8.33$|
+|$1e8$|$0.73$|
+|$1e7$|$0.076$|
+
+|ADD-EDGE(1,i)|Time Elapsed(sec)|
+|---|---|
+|$1e7$|$2.420541$|
+|$1e6$|$0.245$|
+|$1e5$|$0.024$|
+|$1e4$|$0.002529$|
+
+- with `init(1e7)`
+
+|undo|Time Elapsed(sec)|
+|---|---|
+|$1e7$|$0.776684$|
+|$1e6$|$0.077373$|
+|$1e5$|$0.007572$|
+|$1e4$|$0.000791$|
+
+- with `init(1e7)`
+- add_edge(1,0:1e7-1)
 
 
 ### 5. (20pt) (WIP)
