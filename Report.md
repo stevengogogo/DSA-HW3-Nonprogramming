@@ -258,109 +258,109 @@ end
 
 
 
-### 3. (20pt) [Fixing]
+### 3. (20pt) 
 
 **💡 Idea**
-- From [P2-2](#2-10pt), we can observe that $\max(P)$ is trivally **monotonous increasing** when $i$ is in decreasing order.
-    - For $i = N$, we can get $\max(P) = \{p|0,1\}$ with constant time complexity.
-    - For $i\in [1,\cdots, n]$ where $n<N$, we can find potential new maximum $p$ in the region `S[i..i+p'-1]` where $p' \in [p, N-i+1]$. 
+- Let $x(i) = y > 0$. For $\{j | j\in [i+1..i+y-1]\}$, $x(j)=x(j-i+1)$. (**Fig 2-1.**, underlined)
+- If $k\notin [i+1..i+j-1]$, use one-by-one comparison to iterate next site with $y>0$ and calculate the $P$s on the left side of the boundary (**Fig2-1**, yellow vertical line).
+
+<img height=200 src="https://i.imgur.com/fKUbPrU.png">
+
+**Fig 2-1.** Construction of Ps. The first row represents the index of site and the boundary described in *idea*. Second row is the text. The third row is the $x(i)$ with the repetitive region underlined in black.
 
 
+<img height=100 src="https://i.imgur.com/iKzuyPR.jpg">
+<img height=100 src="https://i.imgur.com/OypDeRN.jpg">
 
+**Fig 2-2.** Case I: Overlapped pattern; Case II: Non-overlapped pattern.
 
-|<img height=200 src="https://i.imgur.com/8jnGMeG.jpg">|<img height=200 src="https://i.imgur.com/BwhGNmO.jpg">|
-|---|---|
-
-**Fig 2-1.** Example of calling hash function. The arguments `l` and `r`  of `get_hash` function proposed in [P2-1](#1-10pt). The symbol $\vdash$ represents a function call.
 
 
 **🔧 Implementation**
 
 ```cpp=
-function Max_Duplicate_Length(S)
-    //Preprocessing
-    hash_list = Preprocessing(S, d, q)
+function get_xs(S)
+    create list xs[1..length(S)]
     
-    //Iteration
-    p = 0
+    xs[1] = length(s)
     
-    for i = length(S) to 1
-        same = matching(S, hash_list, 1, i, p)
-        while(same)
-            p+=1
-            if (p+i > length(S)) break end
-            same = matching(S, hash_list, 1, i, p)
+    boundary = 0
+    boundary_origin = 0
+    
+    for i = 2 to length(s)
+        
+        // Case 0
+        if(S[1] != S[i])
+            xs[i] = 0
+        end
+        
+        // Case 1 & 2: Within Boundary
+        else if(i < boundary_origin)
+            // Case 1
+            if(i<xs[boundary])
+                p = xs[boundary] - (i-boundary_origin)
+            end
+            
+            // Case 2
+            else
+                p=xs[i-boundary+1]
+            end
+            
+            while(S[i+p] == S[1+p])                       
+                p+=1
+                boundary_origin = i
+                boundary = i+p-1
+            end
+                
+            xs[i] = p
+        end
+      
+        
+        // Case 3: On the right of the boundary
+        else
+            p = 0
+            while(xs[i+p]==xs[1+p])
+                p+=1
+                boundary_origin = i
+                boundary = i+p-1
+            end     
+            xs[i] = p
         end
     end
     
-    return S[1..p]
+    return [S[1..i] for i in xs[i]] //Xs
 end
 ```
 
-- `Preprocessing(Str, d, q)` function is implemeneted in [P2-1](#1-10pt) with $O(n)$ time complexity where $d$ and $q$ can be any positive numbers. This function returns a list of hashes based on Robin-Karp Algorithm.
-- `matching(Str, hash_list, l1, l2, n)` function is implemented in [P2-1](#1-10pt) with $O(1)$ time complexity.
-
-**🔢 Analysis**
-
-- Prove `p` is the maximum length
-    - When `i=length`, `p` is the maximum value.
-    - Suppose `i=k` has the maximum value $p_k$. The while loop keeps $p_{k+1} \geq p_k$ and iterates until $p_{K+1} +1$ which is not valid. Thus `i=k+1` has the maximum value of $p_{k+1}$. 
-- Time Complexity
-    - Preprocessing: $O(n)$ (Derived in [P2-1](#1-10pt))
-    - Iteration: $O(n)$
-        - The worst case of single iteration is calling the `matching` function with smaller or equal to maximum p in total. The total function calls is equal to  the maximum of $P$. As described in **Fig 2-1**, when $x(i)$ is no more than $max_{j\in[i,N]} x(j)$. It only requires one function call. On the other hand, if $x(i) > max_{j\in[i,N]} x(j)$, it will continue the recorded longest duplicated pattern and incrementally adds `p_current`. Thus, we can show that the time complexity:
+- Time analysis
+    - The boundary only goes to the end of string in one direction
+    - Hence, the time complexity is $O(len(S))$
+- Space: $O(len(S))$.
 
 
-
-$$
-\begin{align}
-\text{Time Complexity} &= \text{Preprocessing} + \text{length of P} + \text{Screening over i}\\
-                       &= \Theta(n) + \Theta(n_{p}) + \Theta(n)  \\
-        &= \Theta(n)
-\end{align}
-$$
-
-- Space Complexity
-    - Preprocessing: $\Theta(n)$
-    - Iteration: $\Theta(1)$
-
-
-
-### 4. (20pt) [Fixing]
+### 4. (20pt)
 
 **💡 Idea**
-- Modified `Rabin-Karp Matcher` [^RKMatch]
-    - Count how many shifts `s` are valid.
+- Merge pattern $p$ with the string $t$.
+    - This creates a new string, $pt$, with length equal to $len(p)+len(t)$
+- Use the algorithm proposed in **P3-3**, calculate the $x(i)$
+- Find all of $i$ such that $\{i | i>len(p)~and~ x(i)\geq len(p)\}$
 
 
 **🔧 Implementation**
 
 ```cpp=
-RABIN-KARP-MATCHER(str, X, d, q)
-    n = Str.length
-    m = X.length
-    h = d^(m-1) mod q
-    p = 0
-    t0 = 0
-    count = 0
-    for i = 1 to m
-     p = (d*p+ X[i]) mod q
-     t0 = (d*t0 + + X[i]) mode q
-    
-    ts = t0
-    for s = 0 to n-m
-        if p==ts
-            if X[1..m] == Str[s+1..s+m]
-                count+=1
-            end
-        end
-        
-        if(s<n-m)
-            ts = (d(ts-X[s+1]h) + T[s+m+1]) mod q
+Find-occurrence(p, t)
+    m = p + t
+    xs = get_xs(m)
+    occurrence = 0
+    for i = length(p)+1 to length(m)
+        if(xs[i] >= length(p))
+            occurrence += 1
         end
     end
     
-    return count
+    return occurrence
 end
 ```
 
@@ -368,9 +368,10 @@ end
 **🔢 Analysis**
 
 - Time: 
-    - Preprocessing: $\Theta(m)$
-    - Matching time: $\Theta(n)$ 
-- Space: $O(n)$
+    - Preprocessing: $O(len(p)+len(t))$
+    - Counting: $O(len(t))$
+    - Overall: $O(len(p) + 2\cdot len(t))$
+- Space: $O(len(p) + len(t))$
 
 
 [^RKMatch]: CLRS. PP.993
@@ -408,7 +409,7 @@ end
     - If `MAP[1] == 2`, it means vertex `1` is connected to vertex `2`
 
 
-![Uploading file..._rhh32k7ty]()
+
 
 
   
@@ -463,7 +464,7 @@ end
 [^stackbipart]: https://stackoverflow.com/questions/53246453/detect-if-a-graph-is-bipartite-using-union-find-aka-disjoint-sets
 
 
-### 2. (15pt) 
+### 2. (15pt) [Fixing]
 
 **💡 Idea**
 1. Create $3N$ nodes. $N$ nodes labelled with `scissor`, $N$ for `stone` and $N$ for `paper`
@@ -494,6 +495,8 @@ function INIT(N)
         MAKE-SET(Stone[i])
         MAKE-SET(Paper[i])
     end
+    
+    contracdict = true
 end
 ```
 
@@ -508,6 +511,9 @@ function WIN(a,b)
     UNION(Scissor[a], Paper[b])
     UNION(Stone[a], Scissor[b])
     UNION(Paper[a], Stone[b])
+    
+    contradict = IS-CONTRADICT-NODE(a)
+    contradict = IS-CONTRADICT-NODE(b)
 end
 ```
 
@@ -518,30 +524,40 @@ function TIE(a,b)
     UNION(Scissor[a], Scissor[b])
     UNION(Stone[a], Stone[b])
     UNION(Paper[a], Paper[b])
+    
+    contradict = IS-CONTRADICT-NODE(a)
+    contradict = IS-CONTRADICT-NODE(b)
 end
 ```
 
 **Contradiction**
 
 ```cpp=
-function IS-CONTRADICT()
-    for i = 1 to N
-        if(FIND-SET(Scissor[i]) == FIND-SET(Stone[i]))
-            return true
-        end
+function IS-CONTRADICT-NODE(i)
+    if(FIND-SET(Scissor[i]) == FIND-SET(Stone[i]))
+        return true
+    end
         
-        if(FIND-SET(Scissor[i]) == FIND-SET(Paper[i]))
-            return true
-        end
+    else if(FIND-SET(Scissor[i]) == FIND-SET(Paper[i]))
+        return true
+    end
         
-        if(FIND-SET(Paper[i]) == FIND-SET(Stone[i]))
-            return true
-        end
+    else if(FIND-SET(Paper[i]) == FIND-SET(Stone[i]))
+        return true
     end
     
-    return false
+    else
+        return false
+    end
+end
+
+function IS-CONTRADICT()
+    return contradict
 end
 ```
+
+- The `IS-CONTRADICT`  uses the global variable `contradict` as return.
+- The `contradict` valuable is updated within every operation `WIN` and `TIE` with $O(\log N)$ time comlexity.
 
 
 **🔢 Analysis**
@@ -549,13 +565,13 @@ end
     - `Init`: $O(N)$
     - `WIN`: $O(\log N)$
     - `TIE`: $O(\log N)$
-    - `IS-CONTRADICT`: $O(\log N)$
-    - Total: $O(N + M \log N)$. Time complexity results from union by size, that is used for `WIN`/`TIE`/`IS-CONTRADICT` function. Noted that these three function are called $M$ times.
+    - `IS-CONTRADICT`: $O(\log N)$ in each operation: The contradict testing is run every `WIN` and `TIE` operations. Each check of a node requires $O(\log N)$ time complexity. This is contributed by `FIND-SET` operation. 
+    - Total: $O(N + M\log N)$. Time complexity results from union by size, that is used for `WIN`/`TIE`/`IS-CONTRADICT` function. Noted that these three function are called $M$ times.
 - Space: 
     - Individual outputs are set as nodes, that triple the size of $N$ verteces. The total space complexity is $O(N)$.
 
 
-### 3. (15pt) (WIP)
+### 3. (15pt) 
 
 **💡 Idea**
 1. **Amortized analysis**: Use amotized analysis to derive the time complexity of **path compression** without **union by size**.
@@ -605,7 +621,7 @@ This process is trivially $O(N)$ in time complexity. Because the stack operation
 structure, path compression (with naive linking) performs any intermixed 
 sequence of m ≥ n find and n – 1 union operations in O(m log n) time`
 
-### 4. (15pt) (WIP)
+### 4. (15pt) 
 
 
 As mentioned in  [^disjoint-amortized], the linked list with union-by-size can achieve $O(N+M\log N)$ time complexity.
@@ -644,7 +660,8 @@ The undo process doesn't destroy the tree structure. For each undo, the unlink p
 
 
 
-### 5. (20pt) (WIP)
+### 5. (20pt) 
+
 
 
 
