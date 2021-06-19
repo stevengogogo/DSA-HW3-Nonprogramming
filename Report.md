@@ -39,7 +39,7 @@ On the other hand, the probability of any collision ($X$):
 
 $$\begin{align}
 P(X) &= 1 - P(X')\\
-     &= 1 - \prod_{i=1}^{n} \frac{n^2 - i + 1}{n^2}
+     &= 1 - \prod_{i=1}^{n} \frac{n^2 - i + 1}{n^2}_{\#}
 \end{align}$$
 
 
@@ -164,7 +164,9 @@ $$E[\text{# of inserting $k$ keys}] = \sum_{i=0}^{\frac{\lfloor P \rfloor}{4} -1
 |Index|1|2|3|4|
 |---|---|---|---|---|
 |Sting|S1|S2|S3|S4|
-|Hash|H1-1|H1-2|H1-3|H1-4|
+|Hash|H1:1|H1:2|H1:3|H1:4|
+
+where `Hi:j` represents the hash of the region `H(S[i..j])`
 
 4. **Query**: Use **Substraction** technique to get the hash value in the region of `S[i..j]` with $O(1)$ time complexity (**Fig. 2-1**).
 
@@ -204,7 +206,7 @@ function get_hash(hash_list, d, q, l, r)
     l_hash = hash_list[l]
     r_hash = hash_list[r]
     
-    i_hash = (l_hash - r_hash) / d^{r-l}
+    i_hash = (r_hash - l_hash) / d^(r-l)
     i_hash = i_hash mod q
     return i_hash
 end
@@ -228,18 +230,21 @@ end
 **🔢 Analysis**
 
 - Preprocessing:
-    - Time: $O(n)$
-    - Space: $O(n)$ 
+    - Time: $O(N)$
+    - Space: $O(N)$ 
     - where $n$ is the length of the text
 - Hash generation
-    - Time: $O(1)$
+    - Time: $O(1\cdot Q)$
+        - Single query requires constant time.
     - Space: $O(1)$
 - Matching
     - Similar to Rabin-Karp Matching
-    - Time: $O(n)$. 
+    - Time: $O(Q)$ (amortized). 
         - In this case, two string poccess equal lengths. The original time complexity $O((m-n+1)n)$ decays to $O(n)$ where $n$ is the length of the sub-string.
-    - Space: $O(1)$.
+    - Space: $O(1)$. Reuse the text stored in `preprocessing`.
 
+
+- **Total**: $O(N+Q)\approx O(N)$ for $Q\approx N$.
 
 ### 2. (10pt)
 
@@ -261,20 +266,21 @@ end
 ### 3. (20pt) 
 
 **💡 Idea**
-- Let $x(i) = y > 0$. For $\{j | j\in [i+1..i+y-1]\}$, $x(j)=x(j-i+1)$. (**Fig 2-1.**, underlined)
-- If $k\notin [i+1..i+j-1]$, use one-by-one comparison to iterate next site with $y>0$ and calculate the $P$s on the left side of the boundary (**Fig2-1**, yellow vertical line).
+- Let $x(i) = y > 0$. For $\{j | j\in [i+1..i+y-1]\}$, $x(j)=x(j-i+1)$. (**Fig 2-1.**, underlined). Therefore, we can get $x(j)$ in constant time if it is covered in the identical region.
+- If $k\notin [i+1..i+j-1]$, use one-by-one comparison to iterate next site with $y>0$ and calculate the $P$s on the left side of the boundary (**Fig2-1**, yellow vertical line). 
+- The main reason this algorithm can keep in $O(n)$ is because the boundary **Fig 2-1.** only goes to right, and the region between `i` and `i+p-1` can be retrieved in **constant time**.
 
 <img height=200 src="https://i.imgur.com/fKUbPrU.png">
 
-**Fig 2-1.** Construction of Ps. The first row represents the index of site and the boundary described in *idea*. Second row is the text. The third row is the $x(i)$ with the repetitive region underlined in black.
+**Fig 2-1.** Construction of Ps. The first row represents the index of site and the boundary described in *idea*. Second row is the text. The third row is the $x(i)$ with the repetitive region underlined in black[^94].
 
 
 <img height=100 src="https://i.imgur.com/iKzuyPR.jpg">
 <img height=100 src="https://i.imgur.com/OypDeRN.jpg">
 
-**Fig 2-2.** Case I: Overlapped pattern; Case II: Non-overlapped pattern.
+**Fig 2-2.** **Case I**: Overlapped pattern; **Case II**: Non-overlapped pattern.
 
-
+[^94]: This problem is discussed with the user `54` on DSA Discord.
 
 **🔧 Implementation**
 
@@ -336,7 +342,8 @@ end
     - The boundary only goes to the end of string in one direction
     - Hence, the time complexity is $O(len(S))$
 - Space: $O(len(S))$.
-
+- This function returns a list of **X**s, which is same as 
+    > Design an algorithm that calculate the content of array X
 
 ### 4. (20pt)
 
@@ -416,7 +423,7 @@ end
 
 <img height=200 src="https://i.imgur.com/kxkp8uz.jpg">
 
-**Fig 3.1** The data structure of `MAP`. In this case `Add(1)`
+**Fig 3.1** The data structure of `MAP`. In this case `Add(1)`. Th array `MAP` is a list of pointers which store address of disjoint sets. Calling `MAP[1]` returns the disjoint set of `2-1` as illustrated.
 
 **Adding edge**
 
@@ -464,20 +471,20 @@ end
 [^stackbipart]: https://stackoverflow.com/questions/53246453/detect-if-a-graph-is-bipartite-using-union-find-aka-disjoint-sets
 
 
-### 2. (15pt) [Fixing]
+### 2. (15pt) 
 
 **💡 Idea**
 1. Create $3N$ nodes. $N$ nodes labelled with `scissor`, $N$ for `stone` and $N$ for `paper`
 2. For `Win` operation, links all of 3 victory conditions. That is `scissor -> paper` / `paper->stone` / `stone->scissor`, and link these conditions into three disjoint sets.
 3. For `tie` operation. For example: `Tie(i,j)`: Link $Node_{i}^{stone}$ to  $Node_{j}^{stone}$ , and the other two pairs (**Fig 3-1.**).
-4. Contradiction: if more than 1 $Node_{i}^{\#}$ belongs to the same set, it means there is one person revealing two results at the same time which is the contradiction.
+4. Contradiction: if more than 1 $Node_{i}^{\#}$ belongs to the same set, it means there is one person revealing two results at the same time which is a contradiction.
 
 
 
 <img height=100 src="https://i.imgur.com/WQe2ymI.png">
 
 
-**Fig 3-1. Sets of all possibility.**
+**Fig 3-1. Sets of all possibility for `WIN(A,B); WIN(B,C)`.**
 
 **🔧Implementation**
 
@@ -508,11 +515,11 @@ end
 
 ```cpp=
 function WIN(a,b)
-    UNION(Scissor[a], Paper[b])
+    UNION(Scissor[a], Paper[b]) 
     UNION(Stone[a], Scissor[b])
     UNION(Paper[a], Stone[b])
     
-    contradict = IS-CONTRADICT-NODE(a)
+    contradict = IS-CONTRADICT-NODE(a) 
     contradict = IS-CONTRADICT-NODE(b)
 end
 ```
@@ -565,17 +572,17 @@ end
     - `Init`: $O(N)$
     - `WIN`: $O(\log N)$
     - `TIE`: $O(\log N)$
-    - `IS-CONTRADICT`: $O(\log N)$ in each operation: The contradict testing is run every `WIN` and `TIE` operations. Each check of a node requires $O(\log N)$ time complexity. This is contributed by `FIND-SET` operation. 
-    - Total: $O(N + M\log N)$. Time complexity results from union by size, that is used for `WIN`/`TIE`/`IS-CONTRADICT` function. Noted that these three function are called $M$ times.
+    - `IS-CONTRADICT`: $O(\log N)$ in each operation: The contradict testing is run every `WIN` and `TIE` operations. Each check requires $O(\log N)$ time complexity. This is contributed by `FIND-SET` operation. 
+    - Total: $O(N + M\log N)$. Time complexity results from `union by size` and `FIND-SET`, which are used for `WIN`/`TIE`/`IS-CONTRADICT` function. Noted that these three function are called $M$ times.
 - Space: 
-    - Individual outputs are set as nodes, that triple the size of $N$ verteces. The total space complexity is $O(N)$.
+    - Individual outputs are set as independent nodes. The initiation triples the size of $N$ verteces. The total space complexity is $O(N)$.
 
 
 ### 3. (15pt) 
 
 **💡 Idea**
-1. **Amortized analysis**: Use amotized analysis to derive the time complexity of **path compression** without **union by size**.
-2. **Experiment**: Use benchmarking technique to prove the statement.
+- **Amortized analysis**: Use amotized analysis to derive the time complexity of **path compression** without **union by size**.
+
 
 
 **🔢 Amortized analysis**
@@ -596,11 +603,12 @@ This process is trivially $O(N)$ in time complexity. Because the stack operation
 
 - The **contradict condition** is
     - Call `undo` instantly before call `union`.
+    - Like `Union ->  Union undo Union`. This can inevitably reconstruct the tree with undoing (**Fig 3-2.** from `right->left->right`).
 
  
 <img height=200 src="https://i.imgur.com/DsSzsEu.png">
 
-**Fig 3-2.** Path compression[^disjoint-ppt]. The structure can be converted to right by `FIND-SET`. Conversely, `Undo`.
+**Fig 3-2.** Path compression[^disjoint-ppt]. The structure can be converted to the right by `FIND-SET`. Conversely, `Undo`.
 
 
 **📒 Conclusion**
@@ -644,7 +652,7 @@ As mentioned in [^findset_union], the union by size technique assures the smalle
 
 **Undo**
 
-The undo process doesn't destroy the tree structure. For each undo, the unlink process is taken place, and this operation maintain the tree height. Thus, after calling `undo`, `Find-set` and `Add-edge` remains $O(\log N)$ time complexity. The `undo` operation requires the time complexity no more than $O(\log N)$
+The `undo` process doesn't destroy the tree structure. For each undo, the unlink process is taken place, and this operation maintain the tree height. Thus, after calling `undo`, `Find-set` and `Add-edge` remains $O(\log N)$ time complexity. The `undo` operation requires the time complexity no more than $O(\log N)$
 
 
 **Conclusion**
@@ -663,7 +671,45 @@ The undo process doesn't destroy the tree structure. For each undo, the unlink p
 ### 5. (20pt) 
 
 
+**💡 Idea**
 
+1. Use path compression technique and union by rank to achieve $O(\alpha(1))$ as mentioned in [^disjoint-amortized].
+2. **Isolation**: 
+    - With path compression technique, we can call `FIND-SET` operation ([**Fig 3-3.**](#3-15pt)) with $\log h$ time complexity to flattten the tree, where $h$ is the height of the tree.
+    - Connect $k$'s descendants to its parent with $O(1)$ time complexity.
+    
+    
+<img height=200 src="https://i.imgur.com/DsSzsEu.png">
+
+**Fig 3-3.** Path compression[^disjoint-ppt]. 
+
+
+**🔧 Implementation**
+
+**Node structure**
+
+```cpp=
+struct node
+    parent::node
+    leaf::node
+end
+```
+
+**Isolation**
+
+```cpp=
+function ISOLATE(k::node)
+    p = FIND-SET(k)
+    k.parent = NULL
+    k.leaf.parent = p
+end
+```
+- Noted that the `FIND-SET` operation is implemented with **path compression** technique, which can flatten the disjoint set, and make it easy to re-connect `k`'s offspring to its parent.
+
+
+**🔢 Analysis**
+
+- The operation is under the scale of $O(M\log N)$ in time complexity. Because the `isloate` operation is under the time complexity of $O(\log h)$ where $h$ is the height of the disjoint tree.
 
 
 ## References
